@@ -1,15 +1,17 @@
 
 package com.garzoli.project.popularmoviestage2.model;
 
+import android.os.Parcelable;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-import javax.annotation.Generated;
-import javax.validation.Valid;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-@Generated("org.jsonschema2pojo")
-public class Result {
+public class Movie implements Parcelable {
 
     @SerializedName("adult")
     @Expose
@@ -19,7 +21,6 @@ public class Result {
     private String backdropPath;
     @SerializedName("genre_ids")
     @Expose
-    @Valid
     private List<Long> genreIds = new ArrayList<Long>();
     @SerializedName("id")
     @Expose
@@ -306,5 +307,51 @@ public class Result {
     public void setVoteCount(Long voteCount) {
         this.voteCount = voteCount;
     }
+
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        dest.writeLong(id);
+        dest.writeString(title);
+        dest.writeString(overview);
+        dest.writeString(posterPath);
+        dest.writeString(backdropPath);
+        dest.writeDouble(voteAverage);
+
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy");
+        try {
+            dest.writeLong(simpleDateFormat.parse(releaseDate).getTime());
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static final Creator<Movie> CREATOR = new Creator<Movie>() {
+        @Override
+        public Movie createFromParcel(android.os.Parcel source) {
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy");
+            Movie movie = new Movie();
+            movie.setId(source.readLong());
+            movie.setTitle(source.readString());
+            movie.setOverview(source.readString());
+            movie.setPosterPath(source.readString());
+            movie.setBackdropPath(source.readString());
+            movie.setVoteAverage(source.readDouble());
+            Date releaseDate = new Date();
+            releaseDate.setTime(source.readLong());
+            movie.setReleaseDate(simpleDateFormat.format(releaseDate));
+            return movie;
+        }
+
+        @Override
+        public Movie[] newArray(int size) {
+            return new Movie[size];
+        }
+    };
 
 }

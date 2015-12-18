@@ -13,7 +13,7 @@ import java.util.Collection;
 import java.util.List;
 
 import com.garzoli.project.popularmoviestage2.R;
-import com.garzoli.project.popularmoviestage2.entity.Movie;
+import com.garzoli.project.popularmoviestage2.model.Movie;
 import com.garzoli.project.popularmoviestage2.util.Util;
 
 /**

@@ -14,10 +14,9 @@ public interface MovieDbAPI {
      * query for popular movies (sort by popular or rating)
      *
      * @param options contains parameter query (sort_by, api_key, vote_count.gte, page)
-     * @param response is the response from the server which is Result (POJO)
      */
     @GET("/3/discover/movie")
-    public void getPopularMovies(@QueryMap Map<String, String> options, Callback<MovieResult> response);
+    public MovieResult getPopularMovies(@QueryMap Map<String, String> options);
 
 
 

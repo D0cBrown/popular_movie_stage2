@@ -30,9 +30,15 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 
-import com.garzoli.project.popularmoviestage2.entity.Movie;
+import com.garzoli.project.popularmoviestage2.api.MovieDbAPI;
 import com.garzoli.project.popularmoviestage2.loader.MoviesAdapter;
+import com.garzoli.project.popularmoviestage2.model.Movie;
+import com.garzoli.project.popularmoviestage2.model.MovieResult;
+
+import retrofit.RestAdapter;
+import retrofit.client.OkClient;
 
 /**
  * @author Francesco Garzoli
@@ -44,6 +50,7 @@ public class PopularMovieMainActivityFragment extends Fragment {
     private static final String STATE_MOVIES = "state_movies";
     private static final String STATE_SORT_CRITERIA = "state_sort_criteria";
     private static final String STATE_START_PAGE = "state_start_page";
+    private static final String BASE_URL = "http://api.themoviedb.org/";
 
     private MoviesAdapter mMoviesAdapter;
     private ArrayList<Movie> mMovieList;
@@ -70,7 +77,7 @@ public class PopularMovieMainActivityFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         if (savedInstanceState != null && savedInstanceState.containsKey(STATE_MOVIES)) {
-            mMovieList = savedInstanceState.getParcelableArrayList(STATE_MOVIES);
+//            mMovieList = savedInstanceState.getParcelableArrayList(STATE_MOVIES);
         } else {
             mMovieList = new ArrayList<>();
         }
@@ -190,6 +197,11 @@ public class PopularMovieMainActivityFragment extends Fragment {
 
     public class FetchMoviesTask extends AsyncTask<String, Void, ArrayList<Movie>> {
         private final String LOG_TAG = FetchMoviesTask.class.getSimpleName();
+        final String SORT_PARAM = "sort_by";
+        final String PAGE_PARAM = "page";
+        final String MINVOTECOUNT_PARAM = "vote_count.gte";
+        final String VOTE_COUNTER = "150";
+        final String APPID_PARAM = "api_key";
 
         @Override
         protected void onPreExecute() {
@@ -239,21 +251,21 @@ public class PopularMovieMainActivityFragment extends Fragment {
                 movie.setOverview(movieJson.getString(MDB_DESCRIPTION));
                 movie.setPosterPath(movieJson.getString(MDB_POSTER_PATH));
                 movie.setBackdropPath(movieJson.getString(MDB_BACKDROP_PATH));
-                movie.setRating((float) movieJson.getDouble(MDB_RATING));
+                movie.setVoteAverage(movieJson.getDouble(MDB_RATING));
                 Date releaseDate;
                 String date = movieJson.getString(MDB_RELEASE_DATE);
-                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+                /*SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 
                 try {
                     releaseDate = formatter.parse(date);
                 } catch (ParseException e) {
                     Log.e(LOG_TAG, "Parsing failed: " + Log.getStackTraceString(e));
                     releaseDate = new Date();
-                }
-                movie.setReleaseDate(releaseDate);
+                }*/
+                movie.setReleaseDate(date);
 
                 if (BuildConfig.DEBUG) {
-                    Log.v(LOG_TAG, "MDB_POPULARITY=" + movieJson.getString(MDB_POPULARITY) + "\t MDB_RATING= " + movie.getRating());
+                    Log.v(LOG_TAG, "MDB_POPULARITY=" + movieJson.getString(MDB_POPULARITY) + "\t MDB_RATING= " + movie.getVoteAverage());
                 }
 
                 movies.add(movie);
@@ -269,87 +281,22 @@ public class PopularMovieMainActivityFragment extends Fragment {
             if (params.length < 2) {
                 return null;
             }
-            // These two need to be declared outside the try/catch
-            // so that they can be closed in the finally block.
-            HttpURLConnection urlConnection = null;
-            BufferedReader reader = null;
 
-            // Will contain the raw JSON response as a string.
-            String moviesJsonStr = null;
+            RestAdapter restAdapter = new RestAdapter.Builder()
+                    .setEndpoint(BASE_URL)
+                    .setLogLevel(RestAdapter.LogLevel.BASIC)
+                    .build();
 
-            try {
-                // Construct the URL for the TheMovieDB API query
-                // http://api.themoviedb.org/3/discover/movie?
-                final String THEMOVIEDB_BASE_URL = "http://api.themoviedb.org/3/discover/movie?";
-                final String SORT_PARAM = "sort_by";
-                final String PAGE_PARAM = "page";
-                final String MINVOTECOUNT_PARAM = "vote_count.gte";
-                final String APPID_PARAM = "api_key";
 
-                Uri builtUri = Uri.parse(THEMOVIEDB_BASE_URL).buildUpon()
-                        .appendQueryParameter(SORT_PARAM, params[0]) //popularity.desc
-                        .appendQueryParameter(PAGE_PARAM, params[1]) //1
-                        .appendQueryParameter(MINVOTECOUNT_PARAM, "300")
-                        .appendQueryParameter(APPID_PARAM, BuildConfig.THE_MOVIE_DB_API_KEY)
-                        .build();
+            MovieDbAPI themoviedbapi = restAdapter.create(MovieDbAPI.class);
+            HashMap<String, String> options = new HashMap<>();
+            options.put(SORT_PARAM, params[0]);
+            options.put(PAGE_PARAM, params[1]);
+            options.put(MINVOTECOUNT_PARAM,VOTE_COUNTER);
+            options.put(APPID_PARAM,BuildConfig.THE_MOVIE_DB_API_KEY);
 
-                URL url = new URL(builtUri.toString());
-                Log.v(LOG_TAG, url.toString());
-
-                // Create the request to OpenWeatherMap, and open the connection
-                urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("GET");
-                urlConnection.connect();
-
-                // Read the input stream into a String
-                InputStream inputStream = urlConnection.getInputStream();
-                StringBuilder buffer = new StringBuilder();
-                if (inputStream == null) {
-                    // Nothing to do.
-                    return null;
-                }
-                reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                    // But it does make debugging a *lot* easier if you print out the completed
-                    // buffer for debugging.
-                    buffer.append(line);
-                    buffer.append("\n");
-
-                }
-
-                if (buffer.length() == 0) {
-                    // Stream was empty.  No point in parsing.
-                    return null;
-                }
-                moviesJsonStr = buffer.toString();
-
-            } catch (IOException e) {
-                Log.e(LOG_TAG, "Error ", e);
-                // If the code didn't successfully get the movie data, there's no point in attemping to parse it.
-                return null;
-            } finally {
-                if (urlConnection != null) {
-                    urlConnection.disconnect();
-                }
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (final IOException e) {
-                        Log.e(LOG_TAG, "Error closing stream", e);
-                    }
-                }
-            }
-
-            try {
-                return getMoviesPosterDataFromJson(moviesJsonStr);
-            } catch (JSONException e) {
-                Log.e(LOG_TAG, e.getMessage(), e);
-            }
-
-            return null;
+            MovieResult movies = themoviedbapi.getPopularMovies(options);
+            return (ArrayList)movies.getMovies();
         }
 
         @Override

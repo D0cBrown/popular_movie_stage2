@@ -11,9 +11,11 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-import com.garzoli.project.popularmoviestage2.entity.Movie;
+import com.garzoli.project.popularmoviestage2.model.Movie;
 import com.garzoli.project.popularmoviestage2.util.Util;
 
 /**
@@ -71,12 +73,17 @@ public class PopularMovieDetailActivityFragment extends Fragment {
         ((TextView) rootView.findViewById(R.id.title)).setText(movie.getTitle());
         ((TextView) rootView.findViewById(R.id.synopsis)).setText(movie.getOverview());
 
-        String voteAverage = String.format("%1$2.1f", movie.getRating());
+        String voteAverage = String.format("%1$2.1f", movie.getVoteAverage());
 
         ((TextView) rootView.findViewById(R.id.rating)).setText(voteAverage);
 //        DateFormat dateFormat = android.text.format.DateFormat.getDateFormat(getActivity());
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(movie.getReleaseDate());
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy");
+        try {
+            calendar.setTime(simpleDateFormat.parse(movie.getReleaseDate()));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
 
         ((TextView) rootView.findViewById(R.id.release_date)).setText(String.valueOf(calendar.get(Calendar.YEAR)));
                 //getString(R.string.released) + dateFormat.format(movie.getReleaseDate()));
