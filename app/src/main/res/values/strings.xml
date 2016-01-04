@@ -10,4 +10,6 @@
     <string name="sort_popularity">Sort by Most Popular</string>
     <string name="sort_rating">Sort by Highest Rated</string>
     <string name="favourite_movie">Favourites</string>
+    <string name="favouriteButton">Add Favourite</string>
+    <string name="titleTrailer">Trailer</string>
 </resources>

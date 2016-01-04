@@ -1,22 +1,31 @@
 package com.garzoli.project.popularmoviestage2;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.garzoli.project.popularmoviestage2.api.MovieDbAPI;
+import com.garzoli.project.popularmoviestage2.model.MovieResult;
+import com.garzoli.project.popularmoviestage2.model.video.MovieDetailVideoResult;
 import com.squareup.picasso.Picasso;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 
 import com.garzoli.project.popularmoviestage2.model.Movie;
 import com.garzoli.project.popularmoviestage2.util.Util;
+
+import retrofit.RestAdapter;
 
 /**
  * Fragment contains Movie details.
@@ -78,16 +87,61 @@ public class PopularMovieDetailActivityFragment extends Fragment {
         ((TextView) rootView.findViewById(R.id.rating)).setText(voteAverage);
 //        DateFormat dateFormat = android.text.format.DateFormat.getDateFormat(getActivity());
         Calendar calendar = Calendar.getInstance();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy");
+       /* SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy");
         try {
             calendar.setTime(simpleDateFormat.parse(movie.getReleaseDate()));
         } catch (ParseException e) {
             e.printStackTrace();
-        }
+        }*/
 
-        ((TextView) rootView.findViewById(R.id.release_date)).setText(String.valueOf(calendar.get(Calendar.YEAR)));
+        ((TextView) rootView.findViewById(R.id.release_date)).setText(movie.getReleaseDate());
                 //getString(R.string.released) + dateFormat.format(movie.getReleaseDate()));
 
+        FetchDetailMovieTask fetchDetailMovieTask = new FetchDetailMovieTask();
+
         return rootView;
+    }
+
+
+    public class FetchDetailMovieTask extends AsyncTask<Integer, Void, MovieDetailVideoResult> {
+        private final String LOG_TAG = FetchDetailMovieTask.class.getSimpleName();
+
+        final String BASE_URL = "http://api.themoviedb.org/3/";
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected MovieDetailVideoResult doInBackground(Integer... params) {
+
+            //If there's no sort definition, there's nothing to loop up. Verify size of params.
+            if (params.length < 1) {
+                return null;
+            }
+
+            RestAdapter restAdapter = new RestAdapter.Builder()
+                    .setEndpoint(BASE_URL)
+                    .setLogLevel(RestAdapter.LogLevel.BASIC)
+                    .build();
+
+
+            MovieDbAPI themoviedbapi = restAdapter.create(MovieDbAPI.class);
+
+            MovieDetailVideoResult movies = themoviedbapi.getMovieVideo(params[0]);
+
+            return movies;
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            super.onProgressUpdate(values);
+        }
+
+        @Override
+        protected void onPostExecute(MovieDetailVideoResult movies) {
+            super.onPostExecute(movies);
+        }
     }
 }

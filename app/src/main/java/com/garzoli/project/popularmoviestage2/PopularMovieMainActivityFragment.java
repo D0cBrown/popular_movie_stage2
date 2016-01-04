@@ -50,7 +50,7 @@ public class PopularMovieMainActivityFragment extends Fragment {
     private static final String STATE_MOVIES = "state_movies";
     private static final String STATE_SORT_CRITERIA = "state_sort_criteria";
     private static final String STATE_START_PAGE = "state_start_page";
-    private static final String BASE_URL = "http://api.themoviedb.org/";
+
 
     private MoviesAdapter mMoviesAdapter;
     private ArrayList<Movie> mMovieList;
@@ -202,76 +202,12 @@ public class PopularMovieMainActivityFragment extends Fragment {
         final String MINVOTECOUNT_PARAM = "vote_count.gte";
         final String VOTE_COUNTER = "150";
         final String APPID_PARAM = "api_key";
+        final String BASE_URL = "http://api.themoviedb.org/3/";
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
             mProgressBar.setVisibility(View.VISIBLE);
-        }
-
-        /**
-         * Take the String representing the complete movies in JSON Format and
-         * pull out the data we need to construct the Strings needed for the wireframes.
-         * <p>
-         * Fortunately parsing is easy:  constructor takes the JSON string and converts it
-         * into an Object hierarchy for us.
-         * </p>
-         */
-        private ArrayList<Movie> getMoviesPosterDataFromJson(String moviesJsonStr)
-                throws JSONException {
-
-            // These are the names of the JSON objects that need to be extracted.
-            final String MDB_RESULTS = "results";
-//            final String MDB_PAGE = "page";
-            final String MDB_TOTAL_PAGES = "total_pages";
-            final String MDB_ID = "id";
-            final String MDB_TITLE = "original_title";
-            final String MDB_DESCRIPTION = "overview";
-            final String MDB_POSTER_PATH = "poster_path";
-            final String MDB_BACKDROP_PATH = "backdrop_path";
-            final String MDB_RELEASE_DATE = "release_date";
-            final String MDB_RATING = "vote_average";
-            final String MDB_POPULARITY = "popularity";
-
-
-
-            JSONObject moviesJson = new JSONObject(moviesJsonStr);
-            int totalPages = moviesJson.getInt(MDB_TOTAL_PAGES);
-            mTotalPageNumber = totalPages < mTotalPageNumber ? totalPages : mTotalPageNumber;
-            JSONArray moviesArray = moviesJson.getJSONArray(MDB_RESULTS);
-            final int moviesArraySize = moviesArray.length();
-            final ArrayList<Movie> movies = new ArrayList<>(moviesArraySize);
-            for (int i = 0; i < moviesArraySize; i++) {
-
-                // Get the JSON object representing the movie
-                JSONObject movieJson = moviesArray.getJSONObject(i);
-                Movie movie = new Movie();
-                movie.setId(movieJson.getLong(MDB_ID));
-                movie.setTitle(movieJson.getString(MDB_TITLE));
-                movie.setOverview(movieJson.getString(MDB_DESCRIPTION));
-                movie.setPosterPath(movieJson.getString(MDB_POSTER_PATH));
-                movie.setBackdropPath(movieJson.getString(MDB_BACKDROP_PATH));
-                movie.setVoteAverage(movieJson.getDouble(MDB_RATING));
-                Date releaseDate;
-                String date = movieJson.getString(MDB_RELEASE_DATE);
-                /*SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-
-                try {
-                    releaseDate = formatter.parse(date);
-                } catch (ParseException e) {
-                    Log.e(LOG_TAG, "Parsing failed: " + Log.getStackTraceString(e));
-                    releaseDate = new Date();
-                }*/
-                movie.setReleaseDate(date);
-
-                if (BuildConfig.DEBUG) {
-                    Log.v(LOG_TAG, "MDB_POPULARITY=" + movieJson.getString(MDB_POPULARITY) + "\t MDB_RATING= " + movie.getVoteAverage());
-                }
-
-                movies.add(movie);
-            }
-
-            return movies;
         }
 
         @Override
