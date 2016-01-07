@@ -8,12 +8,16 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.garzoli.project.popularmoviestage2.api.MovieDbAPI;
+import com.garzoli.project.popularmoviestage2.loader.MoviesAdapter;
+import com.garzoli.project.popularmoviestage2.loader.VideosAdapter;
 import com.garzoli.project.popularmoviestage2.model.MovieResult;
 import com.garzoli.project.popularmoviestage2.model.video.MovieDetailVideoResult;
+import com.garzoli.project.popularmoviestage2.model.video.MovieVideo;
 import com.squareup.picasso.Picasso;
 
 import java.text.ParseException;
@@ -21,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 
 import com.garzoli.project.popularmoviestage2.model.Movie;
 import com.garzoli.project.popularmoviestage2.util.Util;
@@ -35,6 +40,10 @@ import retrofit.RestAdapter;
  */
 public class PopularMovieDetailActivityFragment extends Fragment {
 
+
+    private VideosAdapter mVideosAdapter;
+    private ArrayList<MovieVideo> mMovieVideoList;
+    private TextView trailerTitle;
     public PopularMovieDetailActivityFragment() {
     }
 
@@ -47,11 +56,12 @@ public class PopularMovieDetailActivityFragment extends Fragment {
 
 //        int imageWidth = getActivity().getResources().getDimensionPixelSize(R.dimen.movie_thumb_width);
 //        int imageHeight = getActivity().getResources().getDimensionPixelSize(R.dimen.movie_thumb_height);
-
+        trailerTitle = (TextView) rootView.findViewById(R.id.trailer);
         Movie movie = null;
         Intent intent = getActivity().getIntent();
         if (intent != null && intent.hasExtra(BundleKeys.MOVIE)) {
             movie = intent.getParcelableExtra(BundleKeys.MOVIE);
+            mMovieVideoList = new ArrayList<>();
         }
         if (movie == null) {
             throw new IllegalStateException("no given movie!");
@@ -97,13 +107,18 @@ public class PopularMovieDetailActivityFragment extends Fragment {
         ((TextView) rootView.findViewById(R.id.release_date)).setText(movie.getReleaseDate());
                 //getString(R.string.released) + dateFormat.format(movie.getReleaseDate()));
 
-        FetchDetailMovieTask fetchDetailMovieTask = new FetchDetailMovieTask();
+        mVideosAdapter = new VideosAdapter(getActivity(), mMovieVideoList);
 
+        FetchDetailMovieTask fetchDetailMovieTask = new FetchDetailMovieTask();
+        fetchDetailMovieTask.execute(movie.getId());
+
+        GridView gridView = (GridView) rootView.findViewById(R.id.trailer_videos);
+        gridView.setAdapter(mVideosAdapter);
         return rootView;
     }
 
 
-    public class FetchDetailMovieTask extends AsyncTask<Integer, Void, MovieDetailVideoResult> {
+    public class FetchDetailMovieTask extends AsyncTask<Long, Void, MovieDetailVideoResult> {
         private final String LOG_TAG = FetchDetailMovieTask.class.getSimpleName();
 
         final String BASE_URL = "http://api.themoviedb.org/3/";
@@ -111,10 +126,11 @@ public class PopularMovieDetailActivityFragment extends Fragment {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            trailerTitle.setVisibility(View.INVISIBLE);
         }
 
         @Override
-        protected MovieDetailVideoResult doInBackground(Integer... params) {
+        protected MovieDetailVideoResult doInBackground(Long... params) {
 
             //If there's no sort definition, there's nothing to loop up. Verify size of params.
             if (params.length < 1) {
@@ -129,7 +145,7 @@ public class PopularMovieDetailActivityFragment extends Fragment {
 
             MovieDbAPI themoviedbapi = restAdapter.create(MovieDbAPI.class);
 
-            MovieDetailVideoResult movies = themoviedbapi.getMovieVideo(params[0]);
+            MovieDetailVideoResult movies = themoviedbapi.getMovieVideo(params[0],BuildConfig.THE_MOVIE_DB_API_KEY);
 
             return movies;
         }
@@ -141,7 +157,24 @@ public class PopularMovieDetailActivityFragment extends Fragment {
 
         @Override
         protected void onPostExecute(MovieDetailVideoResult movies) {
-            super.onPostExecute(movies);
+
+            //super.onPostExecute(movies);
+            if(movies != null && !movies.getMovieVideos().isEmpty()) {
+                trailerTitle.setVisibility(View.VISIBLE);
+                List<MovieVideo> ms = movies.getMovieVideos();
+                Log.v(LOG_TAG, "onPostExecute() mVideoList size: " + ms.size());
+                for (MovieVideo m :
+                        ms) {
+                    Log.v(LOG_TAG, "onPostExecute()\t" + movies.getId() + "\t" + m.getId() + "\t" + m.getName() + "\t" + m.getSite());
+                }
+                mMovieVideoList.addAll(ms);
+                mVideosAdapter.notifyDataSetChanged();
+
+            } else {
+                Log.v(LOG_TAG, "onPostExecute() No Loaded Videos");
+            }
         }
+
+
     }
 }
