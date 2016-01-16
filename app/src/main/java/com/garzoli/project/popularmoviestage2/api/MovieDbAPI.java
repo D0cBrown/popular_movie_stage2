@@ -11,6 +11,7 @@ import java.util.Map;
 import retrofit.Callback;
 import retrofit.http.GET;
 import retrofit.http.Path;
+import retrofit.http.Query;
 import retrofit.http.QueryMap;
 
 public interface MovieDbAPI {
@@ -28,7 +29,7 @@ public interface MovieDbAPI {
      * @return
      */
     @GET("/movie/{id}/videos")
-    public MovieDetailVideoResult getMovieVideo(@Path("id") int id);
+    public MovieDetailVideoResult getMovieVideo(@Path("id") int id, @Query("api_key") String sort);
 
     /**
      *
@@ -36,5 +37,5 @@ public interface MovieDbAPI {
      * @return
      */
     @GET("/movie/{id}/reviews")
-    public MovieDetailReviewResult getMovieReviews(@Path("id") int id);
+    public MovieDetailReviewResult getMovieReviews(@Path("id") int id, @Query("api_key") String sort);
 }

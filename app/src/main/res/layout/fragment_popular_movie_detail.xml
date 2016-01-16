@@ -95,29 +95,63 @@
             android:layout_below="@id/poster"
             tools:text="With the nation of Panem in a full scale war, Katniss confronts President Snow in the final showdown. Teamed with a group of her closest friends – including Gale, Finnick, and Peeta – Katniss goes off on a mission with the unit from District 13 as they risk their lives to stage an assassination attempt on President Snow who has become increasingly obsessed with destroying her. The mortal traps, enemies, and moral choices that await Katniss will challenge her more than any arena she faced in The Hunger Games." />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:id="@+id/trailer"
-            android:text="@string/titleTrailer"
 
-            android:layout_below="@id/synopsis"
-            android:layout_alignLeft="@+id/synopsis"
-            android:layout_alignStart="@+id/synopsis"
-            android:layout_marginTop="10dp"
-            style="@style/movieDetailsTitle" />
+        <LinearLayout
+            android:id="@+id/detail_trailers_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="10dp"
+            android:layout_alignTop="@+id/synopsis"
+            >
 
-        <GridView
-            android:id="@+id/trailer_videos"
-            style="@style/movieDetailsRating"
-            android:layout_below="@+id/trailer"
-            android:layout_alignLeft="@+id/trailer"
-            android:layout_alignStart="@+id/trailer">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="20sp"
+                android:text="@string/reviews"
+                android:textStyle="bold" />
 
+            <LinearLayout
+                android:layout_alignTop="@+id/detail_trailers_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="10dp">
 
+                <com.linearlistview.LinearListView
+                    android:id="@+id/detail_reviews"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:divider="?android:dividerHorizontal"
+                    android:showDividers="middle" />
 
-        </GridView>
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="20sp"
+                android:text="@string/trailers"
+                android:textStyle="bold" />
+
+            <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="160dp"
+                    android:layout_marginTop="20dp">
+
+                    <com.linearlistview.LinearListView
+                        android:id="@+id/detail_trailers"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        android:divider="?android:dividerHorizontal"
+                        android:showDividers="middle" />
+
+                </HorizontalScrollView>
+
+        </LinearLayout>
 
 
     </RelativeLayout>

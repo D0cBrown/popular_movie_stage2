@@ -1,6 +1,7 @@
 package com.garzoli.project.popularmoviestage2;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -12,8 +13,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.garzoli.project.popularmoviestage2.api.MovieDbAPI;
+import com.garzoli.project.popularmoviestage2.loader.ReviewAdapter;
+import com.garzoli.project.popularmoviestage2.loader.TrailerAdapter;
 import com.garzoli.project.popularmoviestage2.model.MovieResult;
+import com.garzoli.project.popularmoviestage2.model.review.MovieDetailReviewResult;
+import com.garzoli.project.popularmoviestage2.model.review.MovieReview;
 import com.garzoli.project.popularmoviestage2.model.video.MovieDetailVideoResult;
+import com.garzoli.project.popularmoviestage2.model.video.MovieVideo;
+import com.linearlistview.LinearListView;
 import com.squareup.picasso.Picasso;
 
 import java.text.ParseException;
@@ -21,9 +28,14 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 
 import com.garzoli.project.popularmoviestage2.model.Movie;
 import com.garzoli.project.popularmoviestage2.util.Util;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import retrofit.RestAdapter;
 
@@ -34,6 +46,14 @@ import retrofit.RestAdapter;
  * Date:   09-12-2015
  */
 public class PopularMovieDetailActivityFragment extends Fragment {
+    private TextView mTitleView;
+    private TextView mOverviewView;
+    private TextView mDateView;
+    private TextView mVoteAverageView;
+
+    private Movie mMovie;
+    private TrailerAdapter mTrailerAdapter;
+    private ReviewAdapter mReviewAdapter;
 
     public PopularMovieDetailActivityFragment() {
     }
@@ -56,6 +76,7 @@ public class PopularMovieDetailActivityFragment extends Fragment {
         if (movie == null) {
             throw new IllegalStateException("no given movie!");
         }
+        mMovie = movie;
 
         Picasso picasso = Picasso.with(getActivity());
         ImageView poster = (ImageView) rootView.findViewById(R.id.poster);
@@ -97,27 +118,91 @@ public class PopularMovieDetailActivityFragment extends Fragment {
         ((TextView) rootView.findViewById(R.id.release_date)).setText(movie.getReleaseDate());
                 //getString(R.string.released) + dateFormat.format(movie.getReleaseDate()));
 
-        FetchDetailMovieTask fetchDetailMovieTask = new FetchDetailMovieTask();
+        LinearListView mTrailersView = (LinearListView) rootView.findViewById(R.id.detail_trailers);
+        LinearListView mReviewsView = (LinearListView) rootView.findViewById(R.id.detail_reviews);
+
+
+        mTrailerAdapter = new TrailerAdapter(getActivity(), new ArrayList<MovieVideo>());
+        mTrailersView.setAdapter(mTrailerAdapter);
+
+        mTrailersView.setOnItemClickListener(new LinearListView.OnItemClickListener() {
+            @Override
+            public void onItemClick(LinearListView linearListView, View view,
+                                    int position, long id) {
+                MovieVideo trailer = mTrailerAdapter.getItem(position);
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse("http://www.youtube.com/watch?v=" + trailer.getKey()));
+                startActivity(intent);
+            }
+        });
+
+        mReviewAdapter = new ReviewAdapter(getActivity(), new ArrayList<MovieReview>());
+        mReviewsView.setAdapter(mReviewAdapter);
 
         return rootView;
     }
 
 
-    public class FetchDetailMovieTask extends AsyncTask<Integer, Void, MovieDetailVideoResult> {
-        private final String LOG_TAG = FetchDetailMovieTask.class.getSimpleName();
+
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        if (mMovie != null) {
+            new FetchTrailersTask().execute(Long.toString(mMovie.getId()));
+            new FetchReviewsTask().execute(Long.toString(mMovie.getId()));
+        }
+    }
+
+
+    public class FetchTrailersTask extends AsyncTask<String, Void, List<MovieVideo>> {
+
+        private final String LOG_TAG = FetchTrailersTask.class.getSimpleName();
+
+        final String BASE_URL = "http://api.themoviedb.org/3/";
+        @Override
+        protected List<MovieVideo> doInBackground(String... params) {
+
+            if (params.length == 0) {
+                return null;
+            }
+            RestAdapter restAdapter = new RestAdapter.Builder()
+                    .setEndpoint(BASE_URL)
+                    .setLogLevel(RestAdapter.LogLevel.BASIC)
+                    .build();
+
+
+            MovieDbAPI themoviedbapi = restAdapter.create(MovieDbAPI.class);
+
+            MovieDetailVideoResult movies = themoviedbapi.getMovieVideo(Integer.parseInt(params[0]),BuildConfig.THE_MOVIE_DB_API_KEY);
+           return movies.getMovieVideos();
+        }
+
+        @Override
+        protected void onPostExecute(List<MovieVideo> trailers) {
+            if (trailers != null) {
+                if (trailers.size() > 0) {
+                    if (mTrailerAdapter != null) {
+                        mTrailerAdapter.clear();
+                        for (MovieVideo trailer : trailers) {
+                            mTrailerAdapter.add(trailer);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public class FetchReviewsTask extends AsyncTask<String, Void, List<MovieReview>> {
+
+        private final String LOG_TAG = FetchReviewsTask.class.getSimpleName();
 
         final String BASE_URL = "http://api.themoviedb.org/3/";
 
         @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
+        protected List<MovieReview> doInBackground(String... params) {
 
-        @Override
-        protected MovieDetailVideoResult doInBackground(Integer... params) {
-
-            //If there's no sort definition, there's nothing to loop up. Verify size of params.
-            if (params.length < 1) {
+            if (params.length == 0) {
                 return null;
             }
 
@@ -129,19 +214,22 @@ public class PopularMovieDetailActivityFragment extends Fragment {
 
             MovieDbAPI themoviedbapi = restAdapter.create(MovieDbAPI.class);
 
-            MovieDetailVideoResult movies = themoviedbapi.getMovieVideo(params[0]);
-
-            return movies;
+            MovieDetailReviewResult reviews = themoviedbapi.getMovieReviews(Integer.parseInt(params[0]),BuildConfig.THE_MOVIE_DB_API_KEY);
+            return reviews.getMovieReviews();
         }
 
         @Override
-        protected void onProgressUpdate(Void... values) {
-            super.onProgressUpdate(values);
-        }
-
-        @Override
-        protected void onPostExecute(MovieDetailVideoResult movies) {
-            super.onPostExecute(movies);
+        protected void onPostExecute(List<MovieReview> reviews) {
+            if (reviews != null) {
+                if (reviews.size() > 0) {
+                    if (mReviewAdapter != null) {
+                        mReviewAdapter.clear();
+                        for (MovieReview review : reviews) {
+                            mReviewAdapter.add(review);
+                        }
+                    }
+                }
+            }
         }
     }
 }

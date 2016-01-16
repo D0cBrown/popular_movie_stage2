@@ -15,6 +15,9 @@
     <dimen name="details_poster_height">150dp</dimen>
     <dimen name="details_poster_margin_top">172dp</dimen>
 
+    <dimen name="text_size">20dp</dimen>
+    <dimen name="movie_detail_trailers_height">20dp</dimen>
+    movie_detail_trailers_height
     <!-- misc dimensions -->
     <item name="body_text_line_spacing" format="float" type="dimen">1.15</item>
 </resources>

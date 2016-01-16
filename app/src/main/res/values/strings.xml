@@ -12,4 +12,6 @@
     <string name="favourite_movie">Favourites</string>
     <string name="favouriteButton">Add Favourite</string>
     <string name="titleTrailer">Trailer</string>
+    <string name="trailers">Trailers</string>
+    <string name="reviews">Reviews</string>
 </resources>
