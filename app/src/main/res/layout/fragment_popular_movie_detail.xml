@@ -97,61 +97,66 @@
 
 
         <LinearLayout
-            android:id="@+id/detail_trailers_layout"
+            android:id="@+id/detail_review_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="10dp"
-            android:layout_alignTop="@+id/synopsis"
-            >
+            tools:text="With the nation of Panem in a full scale war, Katniss confronts President Snow in the final showdown."
+            android:layout_below="@+id/titleReview"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:text="@string/reviews"
-                android:textStyle="bold" />
 
-            <LinearLayout
-                android:layout_alignTop="@+id/detail_trailers_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="10dp">
-
-                <com.linearlistview.LinearListView
+            <com.linearlistview.LinearListView
                     android:id="@+id/detail_reviews"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:divider="?android:dividerHorizontal"
                     android:showDividers="middle" />
+     </LinearLayout>
 
-            </LinearLayout>
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="160dp"
+            android:id="@+id/horizontalScrollView"
+            android:layout_below="@+id/textView2"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true">
 
-            <TextView
+            <com.linearlistview.LinearListView
+                android:id="@+id/detail_trailers"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:text="@string/trailers"
-                android:textStyle="bold" />
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:divider="?android:dividerHorizontal"
+                android:showDividers="middle" />
 
-            <HorizontalScrollView
-                    android:layout_width="match_parent"
-                    android:layout_height="160dp"
-                    android:layout_marginTop="20dp">
+        </HorizontalScrollView>
 
-                    <com.linearlistview.LinearListView
-                        android:id="@+id/detail_trailers"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:orientation="horizontal"
-                        android:divider="?android:dividerHorizontal"
-                        android:showDividers="middle" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:text="@string/trailers"
+            android:textStyle="bold"
+            android:layout_marginTop="15dp"
+            android:layout_below="@+id/synopsis"
+            android:layout_alignLeft="@+id/synopsis"
+            android:layout_alignStart="@+id/synopsis"
+            android:id="@+id/textView2" />
 
-                </HorizontalScrollView>
-
-        </LinearLayout>
+        <TextView
+            android:id="@+id/titleReview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:text="@string/reviews"
+            android:textStyle="bold"
+            android:layout_marginTop="15dp"
+            android:layout_below="@+id/horizontalScrollView"
+            android:layout_alignLeft="@+id/textView2"
+            android:layout_alignStart="@+id/textView2" />
 
 
     </RelativeLayout>
