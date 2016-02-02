@@ -14,4 +14,6 @@
     <string name="titleTrailer">Trailer</string>
     <string name="trailers">Trailers</string>
     <string name="reviews">Reviews</string>
+    <string name="removed_from_favourite">Removed movie from favourite list</string>
+    <string name="mark_as_favourite">Added movie to favourite list</string>
 </resources>

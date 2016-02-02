@@ -1,5 +1,14 @@
 apply plugin: 'com.android.application'
+apply plugin: 'android-apt'
 
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.4'
+    }
+}
 android {
     compileSdkVersion 23
     buildToolsVersion "23.0.2"
@@ -34,6 +43,6 @@ dependencies {
     compile 'com.google.code.gson:gson:2.3'
     compile 'org.parceler:parceler:0.2.13'
     compile 'com.github.frankiesardo:linearlistview:1.0.1@aar'
-
-
+    apt 'net.simonvt.schematic:schematic-compiler:0.6.3'
+    compile 'net.simonvt.schematic:schematic:0.6.3'
 }

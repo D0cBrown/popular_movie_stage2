@@ -5,7 +5,7 @@ package com.garzoli.project.popularmoviestage2;
  */
 public enum SortMovieCriteria {
 
-        POPULARITY("popularity.desc"), RATING("vote_average.desc");
+        POPULARITY("popularity.desc"), RATING("vote_average.desc"), FAVOURITE("favourite");
     SortMovieCriteria(String name) {
         this.name = name;
     }

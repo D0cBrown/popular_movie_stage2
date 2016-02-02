@@ -29,6 +29,11 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.garzoli.project.popularmoviestage2.PopularMovieMainActivity" />
         </activity>
+        <provider
+            android:authorities="com.garzoli.project.popularmoviestage2.MoviesProvider"
+            android:name="com.garzoli.project.popularmoviestage2.privider.MoviesProvider"
+            android:exported="false"/>
+
     </application>
 
 </manifest>

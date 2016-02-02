@@ -15,6 +15,8 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -116,11 +118,12 @@ public class PopularMovieMainActivityFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_popular_movie_main, container, false);
         mMoviesAdapter = new MoviesAdapter(getActivity(), mMovieList);
-        Log.v(LOG_TAG, "onCreateView() mMovieList size: " + mMovieList.size() + " mMoviesAdapter size: " + mMoviesAdapter.getCount() + " mStartPage=" + mStartPage);
+        Log.v(LOG_TAG, "onCreateView() mMoviesAdapter size: " + mMoviesAdapter.getCount() + " mStartPage=" + mStartPage);
         mProgressBar = (ProgressBar)rootView.findViewById(R.id.progressBar);
         mProgressBar.setVisibility(View.GONE);
         GridView gridView = (GridView) rootView.findViewById(R.id.movies_gridview);
         gridView.setAdapter(mMoviesAdapter);
+
         Log.d(LOG_TAG, "gridView.getNumColumns() = " + gridView.getNumColumns());
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

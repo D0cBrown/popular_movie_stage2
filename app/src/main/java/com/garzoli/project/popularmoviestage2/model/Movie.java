@@ -8,53 +8,75 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import com.garzoli.project.popularmoviestage2.model.review.MovieReview;
+import com.garzoli.project.popularmoviestage2.model.video.MovieVideo;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 public class Movie implements Parcelable {
+    public final static String MOVIE_ADULT = "adult";
+    public final static String MOVIE_BACKDROP = "backdrop_path";
+    public final static String MOVIE_GENRE = "genre_ids";
+    public final static String MOVIE_ID = "id";
+    public final static String MOVIE_ORIGINAL_LANGUAGE = "original_language";
+    public final static String MOVIE_ORIGINAL_TITLE = "original_title";
+    public final static String MOVIE_OVERVIEW = "overview";
+    public final static String MOVIE_RELEASE_DATE = "release_date";
+    public final static String MOVIE_POSTER_PATH = "poster_path";
+    public final static String MOVIE_POPULARITY = "popularity";
+    public final static String MOVIE_TITLE = "title";
+    public final static String MOVIE_VIDEO = "video";
+    public final static String MOVIE_VOTE_AVERAGE = "vote_average";
+    public final static String MOVIE_VOTE_COUNT = "vote_count";
 
-    @SerializedName("adult")
+    @SerializedName(MOVIE_ADULT)
     @Expose
     private Boolean adult;
-    @SerializedName("backdrop_path")
+    @SerializedName(MOVIE_BACKDROP)
     @Expose
     private String backdropPath;
-    @SerializedName("genre_ids")
+    @SerializedName(MOVIE_GENRE)
     @Expose
     private List<Long> genreIds = new ArrayList<Long>();
-    @SerializedName("id")
+    @SerializedName(MOVIE_ID)
     @Expose
     private Long id;
-    @SerializedName("original_language")
+    @SerializedName(MOVIE_ORIGINAL_LANGUAGE)
     @Expose
     private String originalLanguage;
-    @SerializedName("original_title")
+    @SerializedName(MOVIE_ORIGINAL_TITLE)
     @Expose
     private String originalTitle;
-    @SerializedName("overview")
+    @SerializedName(MOVIE_OVERVIEW)
     @Expose
     private String overview;
-    @SerializedName("release_date")
+    @SerializedName(MOVIE_RELEASE_DATE)
     @Expose
     private String releaseDate;
-    @SerializedName("poster_path")
+    @SerializedName(MOVIE_POSTER_PATH)
     @Expose
     private String posterPath;
-    @SerializedName("popularity")
+    @SerializedName(MOVIE_POPULARITY)
     @Expose
     private Double popularity;
-    @SerializedName("title")
+    @SerializedName(MOVIE_TITLE)
     @Expose
     private String title;
-    @SerializedName("video")
+    @SerializedName(MOVIE_VIDEO)
     @Expose
     private Boolean video;
-    @SerializedName("vote_average")
+    @SerializedName(MOVIE_VOTE_AVERAGE)
     @Expose
     private Double voteAverage;
-    @SerializedName("vote_count")
+    @SerializedName(MOVIE_VOTE_COUNT)
     @Expose
     private Long voteCount;
+
+
+    private boolean isFavourite;
+    private List<MovieReview> reviews;
+    private List<MovieVideo> trailers;
 
     /**
      * 
@@ -308,6 +330,29 @@ public class Movie implements Parcelable {
         this.voteCount = voteCount;
     }
 
+    public boolean isFavourite(){
+        return isFavourite;
+    }
+
+    public void setFavourite(boolean fav){
+        isFavourite = fav;
+    }
+
+    public List<MovieVideo> getTrailers() {
+        return this.trailers;
+    }
+
+    public void setTrailers(List<MovieVideo> trailers) {
+        this.trailers = trailers;
+    }
+
+    public List<MovieReview> getReviews() {
+        return this.reviews;
+    }
+
+    public void setReviews(List<MovieReview> reviews) {
+        this.reviews = reviews;
+    }
 
     @Override
     public int describeContents() {

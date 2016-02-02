@@ -5,17 +5,21 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 public class MovieReview {
+    public final static String MOVIE_REVIEW_ID = "id";
+    public final static String MOVIE_REVIEW_AUTHOR = "author";
+    public final static String MOVIE_REVIEW_CONTENT = "content";
+    public final static String MOVIE_REVIEW_URL = "url";
 
-    @SerializedName("id")
+    @SerializedName(MOVIE_REVIEW_ID)
     @Expose
     private String id;
-    @SerializedName("author")
+    @SerializedName(MOVIE_REVIEW_AUTHOR)
     @Expose
     private String author;
-    @SerializedName("content")
+    @SerializedName(MOVIE_REVIEW_CONTENT)
     @Expose
     private String content;
-    @SerializedName("url")
+    @SerializedName(MOVIE_REVIEW_URL)
     @Expose
     private String url;
 

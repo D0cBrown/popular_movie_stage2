@@ -1,9 +1,13 @@
 package com.garzoli.project.popularmoviestage2;
 
+import android.content.ContentProviderOperation;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.content.OperationApplicationException;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -11,11 +15,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.garzoli.project.popularmoviestage2.api.MovieDbAPI;
+import com.garzoli.project.popularmoviestage2.data.MovieColumns;
+import com.garzoli.project.popularmoviestage2.data.MovieReviewColumns;
+import com.garzoli.project.popularmoviestage2.data.MovieTrailerColumns;
+import com.garzoli.project.popularmoviestage2.data.MoviesProvider;
 import com.garzoli.project.popularmoviestage2.loader.ReviewAdapter;
 import com.garzoli.project.popularmoviestage2.loader.TrailerAdapter;
-import com.garzoli.project.popularmoviestage2.model.MovieResult;
 import com.garzoli.project.popularmoviestage2.model.review.MovieDetailReviewResult;
 import com.garzoli.project.popularmoviestage2.model.review.MovieReview;
 import com.garzoli.project.popularmoviestage2.model.video.MovieDetailVideoResult;
@@ -23,19 +31,12 @@ import com.garzoli.project.popularmoviestage2.model.video.MovieVideo;
 import com.linearlistview.LinearListView;
 import com.squareup.picasso.Picasso;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
 
 import com.garzoli.project.popularmoviestage2.model.Movie;
 import com.garzoli.project.popularmoviestage2.util.Util;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import retrofit.RestAdapter;
 
@@ -77,6 +78,43 @@ public class PopularMovieDetailActivityFragment extends Fragment {
             throw new IllegalStateException("no given movie!");
         }
         mMovie = movie;
+
+
+        TextView markAsFavouriteButtom = (TextView) rootView.findViewById(R.id.buttonFavourite);
+
+        markAsFavouriteButtom.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v)
+            {
+                if (null != mMovie) {
+                    if (mMovie.isFavourite()) {
+                        // removeFavou
+                        getContext().getContentResolver().delete(
+                                MoviesProvider.MovieReviews.withId(Long.toString(mMovie.getId())), null, null);
+                        getContext().getContentResolver().delete(
+                                MoviesProvider.MovieTrailers.withId(Long.toString(mMovie.getId())), null, null);
+                        getContext().getContentResolver().delete(MoviesProvider.Movies.withId(Long.toString(mMovie.getId())),
+                                null, null);
+                        mMovie.setFavourite(false);
+
+                        //v.setBackgroundResource(R.drawable.favourite_background_unselected);
+
+                        Toast.makeText(getContext(), getString(R.string.removed_from_favourite), Toast.LENGTH_SHORT)
+                                .show();
+                    }
+                    else {
+                        addToFavouriteMovie();
+                        mMovie.setFavourite(true);
+                       // v.setBackgroundResource(R.drawable.favourite_background_selected);
+                        Toast.makeText(getContext(), getString(R.string.mark_as_favourite), Toast.LENGTH_SHORT).show();
+                    }
+                    // MoviesActivityFragment fragment = (MoviesActivityFragment)
+                    // getActivity().getSupportFragmentManager().
+                }
+            }
+        });
+
+
 
         Picasso picasso = Picasso.with(getActivity());
         ImageView poster = (ImageView) rootView.findViewById(R.id.poster);
@@ -143,7 +181,66 @@ public class PopularMovieDetailActivityFragment extends Fragment {
     }
 
 
+    private void addToFavouriteMovie()
+    {
+        ContentValues values = new ContentValues();
+        values.put(MovieColumns._ID, mMovie.getId());
+        values.put(MovieColumns.ORIGINAL_TITLE, mMovie.getTitle());
+        values.put(MovieColumns.OVERVIEW, mMovie.getOverview());
+        values.put(MovieColumns.POSTER_PATH, mMovie.getPosterPath());
+        values.put(MovieColumns.RELEASE_DATE, mMovie.getReleaseDate());
+        values.put(MovieColumns.VOTE_COUNT, mMovie.getVoteCount());
+        values.put(MovieColumns.VOTE_AVERAGE, mMovie.getVoteAverage());
+        getContext().getContentResolver().insert(MoviesProvider.Movies.withId(Long.toString(mMovie.getId())), values);
+        saveMovieReviews();
+        saveMovieTrailers();
+    }
 
+    private void saveMovieTrailers()
+    {
+        List<MovieVideo> movieTrailers = mMovie.getTrailers();
+        ArrayList<ContentProviderOperation> batchOperations = new ArrayList<>(movieTrailers.size());
+
+        for (MovieVideo movieTrailer : movieTrailers) {
+            ContentProviderOperation.Builder builder = ContentProviderOperation
+                    .newInsert(MoviesProvider.MovieTrailers.CONTENT_URI);
+            builder.withValue(MovieTrailerColumns.MOVIE_ID, mMovie.getId());
+            builder.withValue(MovieTrailerColumns.KEY, movieTrailer.getKey());
+            builder.withValue(MovieTrailerColumns.NAME, movieTrailer.getName());
+            builder.withValue(MovieTrailerColumns.SITE, movieTrailer.getSite());
+            builder.withValue(MovieTrailerColumns.SIZE, movieTrailer.getSize());
+            builder.withValue(MovieTrailerColumns.TYPE, movieTrailer.getType());
+            batchOperations.add(builder.build());
+        }
+        try {
+            getContext().getContentResolver().applyBatch(MoviesProvider.AUTHORITY, batchOperations);
+        }
+        catch (RemoteException | OperationApplicationException e) {
+            Log.e("", "Error applying batch insert", e);
+        }
+    }
+
+    private void saveMovieReviews()
+    {
+        List<MovieReview> movieReviews = mMovie.getReviews();
+        ArrayList<ContentProviderOperation> batchOperations = new ArrayList<>(movieReviews.size());
+
+        for (MovieReview movieReview : movieReviews) {
+            ContentProviderOperation.Builder builder = ContentProviderOperation
+                    .newInsert(MoviesProvider.MovieReviews.CONTENT_URI);
+            builder.withValue(MovieReviewColumns.MOVIE_ID, mMovie.getId());
+            builder.withValue(MovieReviewColumns.AUTHOR, movieReview.getAuthor());
+            builder.withValue(MovieReviewColumns.CONTENT, movieReview.getContent());
+            builder.withValue(MovieReviewColumns.URL, movieReview.getUrl());
+            batchOperations.add(builder.build());
+        }
+        try {
+            getContext().getContentResolver().applyBatch(MoviesProvider.AUTHORITY, batchOperations);
+        }
+        catch (RemoteException | OperationApplicationException e) {
+            Log.e("", "Error applying batch insert", e);
+        }
+    }
 
     @Override
     public void onStart() {
@@ -184,6 +281,7 @@ public class PopularMovieDetailActivityFragment extends Fragment {
                 if (trailers.size() > 0) {
                     if (mTrailerAdapter != null) {
                         mTrailerAdapter.clear();
+                        mMovie.setTrailers(trailers);
                         for (MovieVideo trailer : trailers) {
                             mTrailerAdapter.add(trailer);
                         }
@@ -224,6 +322,7 @@ public class PopularMovieDetailActivityFragment extends Fragment {
                 if (reviews.size() > 0) {
                     if (mReviewAdapter != null) {
                         mReviewAdapter.clear();
+                        mMovie.setReviews(reviews);
                         for (MovieReview review : reviews) {
                             mReviewAdapter.add(review);
                         }

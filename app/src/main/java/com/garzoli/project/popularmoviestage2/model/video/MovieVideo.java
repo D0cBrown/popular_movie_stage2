@@ -5,26 +5,33 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 public class MovieVideo {
+    public static final String MOVIE_VIDEO_ID = "id";
+    public static final String MOVIE_VIDEO_ISO = "iso_639_1";
+    public static final String MOVIE_VIDEO_KEY = "key";
+    public static final String MOVIE_VIDEO_NAME = "name";
+    public static final String MOVIE_VIDEO_SITE = "site";
+    public static final String MOVIE_VIDEO_SIZE = "size";
+    public static final String MOVIE_VIDEO_TYPE = "type";
 
-    @SerializedName("id")
+    @SerializedName(MOVIE_VIDEO_ID)
     @Expose
     private String id;
-    @SerializedName("iso_639_1")
+    @SerializedName(MOVIE_VIDEO_ISO)
     @Expose
     private String iso6391;
-    @SerializedName("key")
+    @SerializedName(MOVIE_VIDEO_KEY)
     @Expose
     private String key;
-    @SerializedName("name")
+    @SerializedName(MOVIE_VIDEO_NAME)
     @Expose
     private String name;
-    @SerializedName("site")
+    @SerializedName(MOVIE_VIDEO_SITE)
     @Expose
     private String site;
-    @SerializedName("size")
+    @SerializedName(MOVIE_VIDEO_SIZE)
     @Expose
     private Integer size;
-    @SerializedName("type")
+    @SerializedName(MOVIE_VIDEO_TYPE)
     @Expose
     private String type;
 
